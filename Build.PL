@@ -16,7 +16,8 @@ my $builder = Module::Build->new(
     },
     requires => {
         'perl' => '5.008001',
-        'Carp' => 0,
+        'Module::Functions' => 0,
+        'Test::More' => 0.88,
     },
     add_to_cleanup      => [ 'Test-NoOverride-*' ],
     meta_merge     => {
