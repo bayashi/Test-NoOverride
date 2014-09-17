@@ -1,15 +1,93 @@
 package Test::NoOverride;
 use strict;
 use warnings;
-use Carp qw/croak/;
+use Module::Functions;
+use Test::More;
 
 our $VERSION = '0.01';
 
-sub new {
+sub import {
     my $class = shift;
-    my $args  = shift || +{};
 
-    bless $args, $class;
+    my $caller = caller;
+    no strict 'refs'; ## no critic
+    for my $func (qw/ no_override /) {
+        *{"${caller}::$func"} = \&{ __PACKAGE__. "::_$func" };
+    }
+}
+
+sub _no_override {
+    my ($klass, %opt) = @_;
+
+    my %exclude;
+    if (exists $opt{exclude}) {
+        $exclude{$_} = 1 for @{$opt{exclude}};
+    }
+
+    _load_class($klass);
+    my @functions = _get_functions($klass);
+
+    my @methods;
+    _isa_list(\@methods, $klass);
+
+    my $fail = 0;
+    for my $func (@functions) {
+        for my $m (@methods) {
+            my ($class, $method) = %{$m};
+            if ($func eq $method && !$exclude{$func}) {
+                fail("[$klass\::$func] overrides [$class\::$method]");
+                $fail++;
+            }
+        }
+    }
+
+    ok(1, "No Override: $klass") unless $fail;
+}
+
+sub _load_class {
+    my $class = shift;
+
+    $class =~ s!::!/!g;
+    require "$class\.pm"; ## no critic
+}
+
+sub _isa_list {
+    my ($methods, @klass_list) = @_;
+
+    my @parents;
+    for my $klass (@klass_list) {
+        {
+            no strict 'refs'; ## no critic
+            push @parents, @{"$klass\::ISA"};
+        }
+        for my $parent_klass (@parents) {
+            my @functions = _get_functions($parent_klass);
+            for my $func (@functions) {
+                push @{$methods}, { $parent_klass => $func },
+            }
+        }
+    }
+
+    if ( scalar @parents ) {
+        _isa_list($methods, @parents);
+    }
+
+}
+
+sub _get_functions {
+    my $package = shift;
+
+    my @functions = get_public_functions($package);
+
+    {
+        no strict 'refs'; ## no critic
+        my %class = %{"${package}::"};
+        while (my ($k, $v) = each %class) {
+            push @functions, $k if $k =~ /^_.+/;
+        }
+    }
+
+    return @functions;
 }
 
 1;
@@ -18,17 +96,24 @@ __END__
 
 =head1 NAME
 
-Test::NoOverride - one line description
+Test::NoOverride - stop accidentally overriding
 
 
 =head1 SYNOPSIS
 
     use Test::NoOverride;
 
+    no_override('Some::Class');
+
+    no_override(
+        'Some::Class',
+        exclude => [qw/ method /], # methods which you override specifically.
+    );
+
 
 =head1 DESCRIPTION
 
-Test::NoOverride is
+No more accidentally overriding.
 
 
 =head1 REPOSITORY
@@ -44,8 +129,6 @@ Dai Okabayashi E<lt>bayashi@cpan.orgE<gt>
 
 
 =head1 SEE ALSO
-
-L<Other::Module>
 
 
 =head1 LICENSE
