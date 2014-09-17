@@ -63,7 +63,7 @@ sub _isa_list {
         for my $parent_klass (@parents) {
             my @functions = _get_functions($parent_klass);
             for my $func (@functions) {
-                push @{$methods}, { $parent_klass => $func },
+                push @{$methods}, { $parent_klass => $func };
             }
         }
     }
