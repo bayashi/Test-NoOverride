@@ -4,8 +4,15 @@ use Test::More;
 
 use Test::NoOverride;
 
-can_ok 'Test::NoOverride', qw/new/;
+no_override('t::TestNoOverrideChild');
 
-# write more tests
+no_override(
+    't::TestNoOverrideBrat',
+    exclude => ['parent'],
+);
+
+if ($ENV{AUTHOR_TEST}) {
+    no_override('t::TestNoOverrideBrat'); # will fail
+}
 
 done_testing;
