@@ -1,4 +1,7 @@
 Revision history for Perl extension Test::NoOverride
 
+0.02    Sun Sep 21 12:47:44 JST 2014
+        - to call 'import' method for target class
+
 0.01    Wed Sep 17 13:03:50 2014
         - original version
