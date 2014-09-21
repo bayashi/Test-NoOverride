@@ -47,8 +47,10 @@ sub _no_override {
 sub _load_class {
     my $class = shift;
 
-    $class =~ s!::!/!g;
-    require "$class\.pm"; ## no critic
+    my $class_path = $class;
+    $class_path =~ s!::!/!g;
+    require "$class_path\.pm"; ## no critic
+    $class->import;
 }
 
 sub _isa_list {
