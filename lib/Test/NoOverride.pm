@@ -23,6 +23,9 @@ sub _no_override {
     if (exists $opt{exclude}) {
         $exclude{$_} = 1 for @{$opt{exclude}};
     }
+    unless ($opt{new}) {
+        $exclude{new} = 1; # default ignore 'new' method
+    }
 
     _load_class($klass);
     my @functions = _get_functions($klass);
@@ -117,6 +120,13 @@ Test::NoOverride - stop accidentally overriding
 
 No more accidentally overriding.
 
+Note that private method (like '_foo') and (import|BEGIN|UNITCHECK|CHECK|INIT|END) methods are ignored (means that these are not checked). Moreover, C<new> method is ignored by default. If you would like to check overriding 'new' method, then you should set the C<new> param like below.
+
+    no_override(
+        'Some::Class',
+        new => 1, # The 'new' method will be checked.
+    );
+
 
 =head1 REPOSITORY
 
@@ -132,6 +142,7 @@ Dai Okabayashi E<lt>bayashi@cpan.orgE<gt>
 
 =head1 SEE ALSO
 
+L<Module::Functions>
 
 =head1 LICENSE
 
