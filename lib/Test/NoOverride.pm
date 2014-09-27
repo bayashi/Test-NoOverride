@@ -4,7 +4,7 @@ use warnings;
 use Module::Functions;
 use Test::More;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub import {
     my $class = shift;
