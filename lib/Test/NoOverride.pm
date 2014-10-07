@@ -23,6 +23,10 @@ sub _no_override {
     if (exists $opt{exclude}) {
         $exclude{$_} = 1 for @{$opt{exclude}};
     }
+    my %exclude_overridden;
+    if (exists $opt{exclude_overridden}) {
+        $exclude_overridden{$_} = 1 for @{$opt{exclude_overridden}};
+    }
     unless ($opt{new}) {
         $exclude{new} = 1; # default ignore 'new' method
     }
@@ -37,9 +41,11 @@ sub _no_override {
     for my $func (@functions) {
         for my $m (@methods) {
             my ($class, $method) = %{$m};
-            if ($func eq $method && !$exclude{$func}) {
-                fail("[$klass\::$func] overrides [$class\::$method]");
-                $fail++;
+            if ($func eq $method) {
+                if (!$exclude{$func} && !$exclude_overridden{"$class\::$method"} ) {
+                    fail("[$klass\::$func] overrides [$class\::$method]");
+                    $fail++;
+                }
             }
         }
     }
@@ -113,6 +119,11 @@ Test::NoOverride - stop accidentally overriding
     no_override(
         'Some::Class',
         exclude => [qw/ method /], # methods which you override specifically.
+    );
+
+    no_override(
+        'Some::Class',
+        exclude_overridden => [qw/ Foo::Bar::method /], # ignore to be overridden.
     );
 
 

@@ -13,6 +13,11 @@ no_override(
 
 no_override('t::TestNoOverrideNew');
 
+no_override(
+    't::TestNoOverrideCommon',
+    exclude_overridden => ['t::TestNoOverrideParent::parent'],
+);
+
 if ($ENV{AUTHOR_TEST}) {
     no_override('t::TestNoOverrideBrat'); # will fail
 }
